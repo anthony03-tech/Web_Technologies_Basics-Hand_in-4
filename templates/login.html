@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css-login.css') }}">
+    <title>Login Page</title>
+</head>
+
+<body>
+    <h1>Please Login</h1>
+    <form method="POST" id="loginForm">
+        Username: <input name="username"><br>
+        Password: <input name="password" type="password"><br>
+        <button type="submit">Login</button>
+    </form>
+
+    <p style="color:red;">{{ error }}</p>
+
+    <a href="/createAccount">Create Account</a>
+    <a href="/forgotPassword">Forgot Password</a>
+</body>
+
+</html>

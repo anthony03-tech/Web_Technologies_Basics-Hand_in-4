@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css-SecondPage.css') }}">
+  <title>Account</title>
+</head>
+
+<body>
+  <div class="container">
+    <nav>
+      <a href="/to-do-list">Tasks</a>
+      <a href="/account" class="active">Account</a>
+      <a href="/settings">Settings</a>
+      <a href="/logout">Logout</a>
+    </nav>
+    <div id="toast" style="
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(8px);
+  background: #222; color: #fff; font-size: 13px; padding: 8px 18px;
+  border-radius: 40px; opacity: 0; transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none; white-space: nowrap; z-index: 100;
+"></div>
+
+    <!-- <div>
+      <button id="user-1" class="active" onclick="loadUser(1)">
+        User Profil 1
+      </button>
+      <button id="user-2" onclick="loadUser(2)">User Profil 2</button>
+      <button id="user-3" onclick="loadUser(3)">User Profil 3</button>
+    </div> -->
+
+    <h1>Profile</h1>
+
+    <!-- Profile -->
+    <p class="section-label">Profile</p>
+    <div class="card">
+      <div class="profile">
+        <div class="avatar" id="avatar"></div>
+        <div class="profile-info" id="id_profil_info_save">
+          <p class="profile-name" id="profile-name">{{ username }}</p>
+          <p class="profile-email" id="profile-email">{{email}}</p>
+        </div>
+        <div class="profile-info" id="id_profil_info_edit" style="display: none;">
+          <form action="#" method="POST">
+            <input type="text" name="profile-name" value="{{ username }}"><br>
+            <input type="email" name="profile-email" value="{{email}}">
+          </form>
+        </div>
+        <button onclick="saveAccount()" class="edit-btn" id="id_save_acc" style="display: none;">Save</button>
+        <button onclick="editAccount()" class="edit-btn" id="id_edit_acc">Edit</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <p class="section-label">Activity</p>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <p class="stat-number">24</p>
+        <p class="stat-label">Total</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-number green">15</p>
+        <p class="stat-label">Completed</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-number red">9</p>
+        <p class="stat-label">Remaining</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 10px">
+      <div class="progress-header">
+        <span>Completion rate</span>
+        <span class="progress-pct">62%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill"></div>
+      </div>
+      <p class="progress-sub">15 of 24 tasks done this month</p>
+    </div>
+
+    <!-- Settings -->
+    <p class="section-label">Preferences</p>
+    <div class="settings-list">
+      <div class="setting-row">
+        <span class="setting-icon">🔔</span>
+        <span class="setting-name">Daily reminders</span>
+        <label class="toggle">
+          <input type="checkbox" data-key="reminders" {% if reminders %}checked{% endif %}>
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-icon">🌙</span>
+        <span class="setting-name">Dark mode</span>
+        <label class="toggle">
+          <input type="checkbox" data-key="darkMode" {% if darkMode %}checked{% endif %}>
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-icon">📌</span>
+        <span class="setting-name">Pin urgent tasks</span>
+        <label class="toggle">
+          <input type="checkbox" data-key="pinUrgantTask" {% if pinUrgantTask %}checked{% endif %}>
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-icon">✅</span>
+        <span class="setting-name">Auto-hide completed</span>
+        <label class="toggle">
+          <input type="checkbox" data-key="autoHideTask" {% if autoHideTask %}checked{% endif %}>
+          <span class="toggle-track"></span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-icon">🗑️</span>
+        <span class="setting-name danger">Delete account</span>
+        <a href="/deleteAcc" class="edit-btn" style="color: #e74c3c; border-color: #e74c3c">Delete</a>
+      </div>
+    </div>
+
+    <p class="footer-note">— your data is yours —</p>
+  </div>
+  <!-- <script>
+    async function loadUser(id) {
+      try {
+        const res = await fetch(`/account/${id}`);
+        const data = await res.json();
+
+        document.getElementById("profile-name").textContent = data.name;
+        document.getElementById("profile-email").textContent = data.email;
+        document.getElementById("avatar").textContent = data.avatar;
+        document.getElementById("profile-since").textContent = data.member;
+
+        document
+          .querySelectorAll("button")
+          .forEach((btn) => btn.classList.remove("active"));
+        document.getElementById(`user-${id}`).classList.add("active");
+      } catch (err) {
+        alert("Failed to load user: " + err.message);
+      }
+    }
+  </script> -->
+  <script>
+    let toastTimer;
+
+    function showToast(msg, isError = false) {
+      const toastElement = document.getElementById("toast");
+      toastElement.textContent = msg;
+      toastElement.style.background = isError ? "#e74c3c" : "#222";
+      toastElement.style.opacity = "1";
+      toastElement.style.transform = "translateX(-50%) translateY(0)";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastElement.style.opacity = "0";
+        toastElement.style.transform = "translateX(-50%) translateY(8px)";
+      }, 2000);
+    }
+
+    document.querySelectorAll(".toggle input[data-key]").forEach(input => {
+      input.addEventListener("change", async function () {
+        const key = this.dataset.key;
+        const value = this.checked;
+        const label = this.closest(".setting-row").querySelector(".setting-name").textContent;
+
+        // Disable toggle while saving
+        this.disabled = true;
+
+        try {
+          const res = await fetch("/account/toggle", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              key: key,
+              value: value
+            })
+          });
+
+          if (!res.ok) throw new Error();
+
+          const data = await res.json();
+          this.checked = data.value;
+          showToast((data.value ? "Enabled" : "Disabled") + ": " + label);
+
+        } catch {
+          // Revert on failure
+          this.checked = !value;
+          showToast("Failed to save — try again", true);
+        } finally {
+          this.disabled = false;
+        }
+      });
+    });
+
+    function editAccount() {
+      document.getElementById("id_profil_info_save").classList.add("hide");
+      document.getElementById("id_profil_info_edit").style.display = "block";
+
+      document.getElementById("id_edit_acc").classList.add("hide");
+      document.getElementById("id_save_acc").style.display = "block";
+    };
+
+    function saveAccount() {
+      document.getElementById("id_profil_info_save").classList.remove("hide");
+      document.getElementById("id_profil_info_edit").style.display = "none";
+
+      document.getElementById("id_edit_acc").classList.remove("hide");
+      document.getElementById("id_save_acc").style.display = "none";
+
+
+      let newEmail = document.getElementsByName("profile-email")[0].value;
+      let newUsername = document.getElementsByName("profile-name")[0].value;
+
+      fetch("/account/edit", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": 'application/json'
+          },
+          body: JSON.stringify({
+            newEmail: newEmail,
+            newUsername: newUsername
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          location.reload();
+        })
+    }
+  </script>
+</body>
+
+</html>

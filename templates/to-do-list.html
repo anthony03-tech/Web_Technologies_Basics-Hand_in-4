@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css-FirstPage.css') }}">
+  <title>To-Do</title>
+</head>
+
+<body>
+  <div class="container">
+    <nav>
+      <a href="/to-do-list" class="active">Tasks</a>
+      <a href="/account">Account</a>
+      <a href="/settings">Settings</a>
+      <a href="/logout">Logout</a>
+    </nav>
+
+    <h1>To<span>-</span>Do</h1>
+    <p class="subtitle">Click a task to mark it complete</p>
+
+    <p class="section-label">Today</p>
+    <ul class="todo-list">
+      <li class="todo-item">
+        <input type="checkbox" id="item1">
+        <label for="item1">Review project proposal
+          <span class="badge urgent">urgent</span></label>
+      </li>
+      <li class="todo-item">
+        <input type="checkbox" id="item2">
+        <label for="item2">Reply to pending emails <span class="badge">normal</span></label>
+      </li>
+      <li class="todo-item">
+        <input type="checkbox" id="item3">
+        <label for="item3">Buy groceries <span class="badge">normal</span></label>
+      </li>
+      <li class="todo-item">
+        <input type="checkbox" id="item4">
+        <label for="item4">Morning run <span class="badge">normal</span></label>
+      </li>
+    </ul>
+
+    <p class="section-label">This week</p>
+    <ul class="todo-list">
+      <li class="todo-item">
+        <input type="checkbox" id="item5">
+        <label for="item5">Finish reading chapter 4 <span class="badge">normal</span></label>
+      </li>
+      <li class="todo-item">
+        <input type="checkbox" id="item6">
+        <label for="item6">Schedule dentist appointment
+          <span class="badge urgent">urgent</span></label>
+      </li>
+      <li class="todo-item">
+        <input type="checkbox" id="item7">
+        <label for="item7">Clean the apartment <span class="badge">normal</span></label>
+      </li>
+      <li class="todo-item">
+        <input type="checkbox" id="item8">
+        <label for="item8">Pay electricity bill <span class="badge">normal</span></label>
+      </li>
+    </ul>
+  </div>
+</body>
+
+</html>
