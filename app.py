@@ -1,6 +1,5 @@
 from flask import Flask, request, redirect, render_template, jsonify, session, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-# import sqlalchemy as sa
 import psycopg2
 
 app = Flask(__name__)
@@ -16,7 +15,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS user_table (
             user_id SMALLSERIAL PRIMARY KEY,
             email VARCHAR(255) NOT NULL,
             username VARCHAR(255) NOT NULL UNIQUE,
-            uPassword VARCHAR(255) NOT NULL
+            password VARCHAR(255) NOT NULL
             );
 """)
 
@@ -56,7 +55,7 @@ def createAccount():
         hashed_pw = generate_password_hash(password)
 
         try:
-            cur.execute("""Insert into user_table (email, username, uPassword) values
+            cur.execute("""Insert into user_table (email, username, password) values
                         (%s, %s, %s);""",
                         (email, username, hashed_pw))
 
@@ -85,7 +84,7 @@ def login():
         password = request.form["password"]
 
         cur.execute(
-            """Select username, uPassword from user_table where username = %s;""", (username))
+            """Select username, password from user_table where username = %s;""", (username))
 
         user = cur.fetchone()
 
@@ -121,139 +120,121 @@ def account():
 
     user_id = session["user_id"]
 
-    cur.execute("""Select u.user_id, u.username, u.password, s.reminders, s.darkMode, s.pinUrgantTask, s.autoHideTask 
-                    from users u
+    cur.execute("""Select u.user_id, u.username, u.password, s.reminders, s.darkMode, s.pinUrgantTask, s.autoHideTask
+                    from user_table u
                     join settings_table s ON users.user_id = settings_table.user_id
-                    where username = 'Bob'
-                """)
+                    where u.user_id = %s""",
+                (user_id))
 
     result = cur.fetchone()
     return render_template("account.html", username=result.username, email=result.email, reminders=result.reminders, darkMode=result.darkMode, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask)
 
 
-# ALLOWED_KEYS_ACCOUNT = {"reminders",
-#                         "darkMode", "pinUrgantTask", "autoHideTask"}
+ALLOWED_KEYS_ACCOUNT = {"reminders",
+                        "darkMode", "pinUrgantTask", "autoHideTask"}
 
 
-# @app.route("/account/toggle", methods=["PATCH"])
-# def toggle_setting_account():
-#     if "user_id" not in session:
-#         return jsonify({"error": "Not logged in"}), 401
+@app.route("/account/toggle", methods=["PATCH"])
+def toggle_setting_account():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
 
-#     data = request.get_json()
-#     key = data.get("key")
-#     value = data.get("value")
+    data = request.get_json()
+    key = data.get("key")
+    value = data.get("value")
 
-#     # Block anything not in the allowed list
-#     if key not in ALLOWED_KEYS_ACCOUNT:
-#         return jsonify({"error": "Invalid setting"}), 400
+    # Block anything not in the allowed list
+    if key not in ALLOWED_KEYS_ACCOUNT:
+        return jsonify({"error": "Invalid setting"}), 400
 
-#     user_id = session["user_id"]
+    user_id = session["user_id"]
 
-#     with engine.connect() as conn:
-#         conn.execute(
-#             settings_table.update()
-#             .where(settings_table.c.user_id == user_id)
-#             .values(**{key: value})
-#         )
-#         conn.commit()
+    cur.execute("""Update settings_table set {key} = %s where user_id = %s""",
+                (value, user_id))
 
-#     return jsonify({"key": key, "value": value})
+    conn.commit()
+
+    return jsonify({"key": key, "value": value})
 
 
-# ALLOWED_KEYS_SETTINGS = {"reminders", "alerts",
-#                          "darkMode", "pinUrgantTask", "autoHideTask"}
+@app.route("/settings")
+def settings():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    cur.execute("""Select u.user_id, s.reminders, s.alerts, s.darkMode, s.textSize, s.language, s.pinUrgantTask, s.autoHideTask, s.sortBy
+                    from user_table u
+                    join settings_table s ON users.user_id = settings_table.user_id
+                    where u.user_id = %s""",
+                (user_id))
+
+    result = cur.fetchone()
+    return render_template("settings.html", reminders=result.reminders, alerts=result.alerts, darkMode=result.darkMode, textSize=result.textSize, language=result.language, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask, sortBy=result.sortBy)
 
 
-# @app.route("/settings")
-# def settings():
-#     if "user_id" not in session:
-#         return redirect(url_for("login"))
-
-#     user_id = session["user_id"]
-
-#     with engine.connect() as conn:
-#         query = (
-#             sa.select(settings_table.c.reminders,
-#                       settings_table.c.alerts, settings_table.c.darkMode, settings_table.c.textSize, settings_table.c.language, settings_table.c.pinUrgantTask, settings_table.c.autoHideTask, settings_table.c.sortBy)
-#             .join(settings_table, user_table.c.id == settings_table.c.user_id)
-#             .where(user_table.c.id == user_id)
-#         )
-
-#         result = conn.execute(query).fetchone()
-#     return render_template("settings.html", reminders=result.reminders, alerts=result.alerts, darkMode=result.darkMode, textSize=result.textSize, language=result.language, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask, sortBy=result.sortBy)
+ALLOWED_KEYS_SETTINGS = {"reminders", "alerts",
+                         "darkMode", "pinUrgantTask", "autoHideTask"}
 
 
-# @app.route("/settings/toggle", methods=["PATCH"])
-# def toggle_setting():
-#     if "user_id" not in session:
-#         return jsonify({"error": "Not logged in"})
+@app.route("/settings/toggle", methods=["PATCH"])
+def toggle_setting():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"})
 
-#     data = request.get_json()
-#     key = data.get("key")
-#     value = data.get("value")
+    data = request.get_json()
+    key = data.get("key")
+    value = data.get("value")
 
-#     # Block anything not in the allowed list
-#     if key not in ALLOWED_KEYS_SETTINGS:
-#         return jsonify({"error": "Invalid setting"})
+    # Block anything not in the allowed list
+    if key not in ALLOWED_KEYS_SETTINGS:
+        return jsonify({"error": "Invalid setting"})
 
-#     user_id = session["user_id"]
+    user_id = session["user_id"]
 
-#     with engine.connect() as conn:
-#         conn.execute(
-#             settings_table.update()
-#             .where(settings_table.c.user_id == user_id)
-#             .values(**{key: value})
-#         )
-#         conn.commit()
+    cur.execute("""Update settings_table set {key} = %s where user_id = %s""",
+                (value, user_id))
 
-#     return jsonify({"key": key, "value": value})
+    conn.commit()
+
+    return jsonify({"key": key, "value": value})
 
 
-# @app.route("/account/edit", methods=["PATCH"])
-# def saveAcc():
-#     if "user_id" not in session:
-#         return jsonify({"error": "Not logged in"})
+@app.route("/account/edit", methods=["PATCH"])
+def saveAcc():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"})
 
-#     user_id = session.get("user_id")
+    user_id = session.get("user_id")
 
-#     data = request.json
-#     email = data.get("newEmail")
-#     username = data.get("newUsername")
+    data = request.json
+    email = data.get("newEmail")
+    username = data.get("newUsername")
 
-#     with engine.connect() as conn:
-#         conn.execute(
-#             user_table.update()
-#             .where(user_table.c.id == user_id)
-#             .values(email=email, username=username)
-#         )
-#         conn.commit()
+    cur.execute("""Update user_table set username = '%s', email = '%s'
+                    where user_id = '%s';""",
+                (username, email, user_id))
 
-#     return jsonify({'status': 'success'})
+    conn.commit()
+
+    return jsonify({'status': 'success'})
 
 
-# @app.route("/deleteAcc")
-# def deleteAcc():
-#     if "user_id" not in session:
-#         return jsonify({"error": "Not logged in"})
+@app.route("/deleteAcc")
+def deleteAcc():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"})
 
-#     user_id = session.get("user_id")
+    user_id = session.get("user_id")
 
-#     with engine.connect() as conn:
-#         conn.execute(
-#             user_table.delete()
-#             .where(user_table.c.id == user_id)
-#         )
-#         conn.commit()
+    cur.execute("""Delete from user_table where user_id = %s""", (user_id))
+    conn.commit()
 
-#     with engine.connect() as conn:
-#         conn.execute(
-#             settings_table.delete()
-#             .where(settings_table.c.user_id == user_id)
-#         )
-#         conn.commit()
+    cur.execute("""Delete from settings_table where user_id = %s""", (user_id))
+    conn.commit()
 
-#     return redirect(url_for("login"))
+    return redirect(url_for("login"))
 
 
 app.run(debug=True)
