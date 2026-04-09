@@ -9,17 +9,19 @@
 </head>
 
 <body>
-    <h1>Please Login</h1>
-    <form method="POST" id="loginForm">
-        Username: <input name="username"><br>
-        Password: <input name="password" type="password"><br>
-        <button type="submit">Login</button>
-    </form>
+    <div class="container">
+        <h1>Please Login</h1>
+        <form method="POST" id="loginForm">
+            Username: <input name="username"><br>
+            Password: <input name="password" type="password"><br>
+            <button type="submit">Login</button>
+        </form>
 
-    <p style="color:red;">{{ error }}</p>
-
+        <p style="color:red;">{{ error }}</p>
+    </div>
     <a href="/createAccount">Create Account</a>
     <a href="/forgotPassword">Forgot Password</a>
+
 </body>
 
 </html>
