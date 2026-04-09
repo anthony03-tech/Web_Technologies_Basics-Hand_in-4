@@ -10,8 +10,14 @@ conn = psycopg2.connect(host="localhost", dbname="postgres",
                         user="postgres", password="admin", port="5432")
 cur = conn.cursor()
 
+# cur.execute("""Drop table if exists settings_table""")
+# cur.execute("""Drop table if exists task_table""")
+# cur.execute("""Drop table if exists user_table""")
+
+# conn.commit()
+
 # User table
-cur.execute("""CREATE TABLE IF NOT EXISTS user_table (
+cur.execute("""Create table if not exists user_table (
             user_id SMALLSERIAL PRIMARY KEY,
             email VARCHAR(255) NOT NULL,
             username VARCHAR(255) NOT NULL UNIQUE,
@@ -20,7 +26,7 @@ cur.execute("""CREATE TABLE IF NOT EXISTS user_table (
 """)
 
 # Settings table
-cur.execute("""CREATE TABLE IF NOT EXISTS settings_table (
+cur.execute("""Create table if not exists settings_table (
             settings_id SMALLSERIAL PRIMARY KEY,
             user_id INT,
             reminders BOOLEAN NOT NULL,
@@ -31,6 +37,19 @@ cur.execute("""CREATE TABLE IF NOT EXISTS settings_table (
             pinUrgantTask BOOLEAN NOT NULL,
             autoHideTask BOOLEAN NOT NULL,
             sortBy VARCHAR(255) NOT NULL,
+            CONSTRAINT fk_user_table
+                FOREIGN KEY(user_id)
+                    REFERENCES user_table(user_id)
+            );
+""")
+
+# Task table
+cur.execute("""Create table if not exists task_table (
+            task_id SERIAL PRIMARY KEY,
+            user_id INT,
+            task_name VARCHAR(255) NOT NULL UNIQUE,
+            type VARCHAR(255) NOT NULL,
+            status BOOLEAN NOT NULL,
             CONSTRAINT fk_user_table
                 FOREIGN KEY(user_id)
                     REFERENCES user_table(user_id)
