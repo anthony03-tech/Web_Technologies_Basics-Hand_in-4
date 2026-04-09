@@ -20,6 +20,37 @@
     <h1>To<span>-</span>Do</h1>
     <p class="subtitle">Click a task to mark it complete</p>
 
+    <button onclick="addTask()">Add new Task</button>
+    <button onclick="editTask()">Edit Task</button>
+    <button onclick="deleteTask()">Delete Task</button>
+
+    <form method="POST" id="taskForm">
+      Task name: <input type="text" name="taskName">
+      <br>
+      <label>Deadline:</label>
+      <input type="date" name="taskDate" id="id_date">
+      <br>
+      <label>Choose a Status:</label>
+    </form>
+
+    <button onclick="getNormal('normal')">normal</button>
+    <button onclick="getImportant('important')">important</button>
+    <button onclick="getUrgent('urgent')">urgent</button>
+
+    <form method="POST" id="statusNormalForm">
+      <input type="hidden" name="statusNormal" id="id_normal">
+    </form>
+
+    <form method="POST" id="statusImportantForm">
+      <input type="hidden" name="statusImportant" id="id_important">
+    </form>
+
+    <form method="POST" id="statusUrgentForm">
+      <input type="hidden" name="statusUrgent" id="id_urgent">
+    </form>
+
+    <button onclick="saveTask()">Add Task</button>
+
     <p class="section-label">Today</p>
     <ul class="todo-list">
       <li class="todo-item">
@@ -62,6 +93,51 @@
       </li>
     </ul>
   </div>
+  <script>
+    function addTask() {}
+
+    function editTask() {}
+
+    function deleteTask() {}
+
+    function getNormal(status) {
+      document.getElementById("id_normal").value = status;
+      document.getElementById("id_important").value = '';
+      document.getElementById("id_urgent").value = '';
+    }
+
+    function getImportant(status) {
+      document.getElementById("id_normal").value = '';
+      document.getElementById("id_important").value = status;
+      document.getElementById("id_urgent").value = '';
+    }
+
+    function getUrgent(status) {
+      document.getElementById("id_normal").value = '';
+      document.getElementById("id_important").value = status;
+      document.getElementById("id_urgent").value = '';
+    }
+
+    function saveTask() {
+      let getNormal = document.getElementById("id_normal").value;
+      let getImportant = document.getElementById("id_important").value;
+      let getUrgent = document.getElementById("id_urgent").value;
+
+      document.getElementById("taskForm").submit();
+
+      if (getNormal != '') {
+        document.getElementById("statusNormalForm").submit();
+      }
+
+      if (getImportant != '') {
+        document.getElementById("statusImportantForm").submit();
+      }
+
+      if (getUrgent != '') {
+        document.getElementById("statusUrgentForm").submit();
+      }
+    }
+  </script>
 </body>
 
 </html>
