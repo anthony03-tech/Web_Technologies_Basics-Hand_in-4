@@ -10,6 +10,7 @@ body {
     color: #222;
     padding: 48px 24px;
     min-height: 100vh;
+    text-align: center;
 }
 
 .container {
