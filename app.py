@@ -49,6 +49,7 @@ cur.execute("""Create table if not exists task_table (
             user_id INT,
             task_name VARCHAR(255) NOT NULL UNIQUE,
             type VARCHAR(255) NOT NULL,
+            deadline DATE NOT NULL,
             status BOOLEAN NOT NULL,
             CONSTRAINT fk_user_table
                 FOREIGN KEY(user_id)
