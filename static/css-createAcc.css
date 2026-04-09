@@ -12,6 +12,11 @@ body {
     min-height: 100vh;
 }
 
+.container {
+    max-width: 560px;
+    margin: 0 auto;
+}
+
 /* Header */
 h1 {
     font-size: 36px;
@@ -86,7 +91,7 @@ body>span {
 }
 
 /* Login link */
-body>a {
+a {
     font-size: 13px;
     text-decoration: none;
     padding: 6px 16px;
@@ -98,7 +103,7 @@ body>a {
     transition: border-color 0.15s, color 0.15s;
 }
 
-body>a:hover {
+a:hover {
     border-color: #222;
     color: #222;
 }
