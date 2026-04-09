@@ -37,6 +37,8 @@ cur.execute("""CREATE TABLE IF NOT EXISTS settings_table (
             );
 """)
 
+conn.commit()
+
 
 @app.route("/")
 def homePage():
@@ -56,8 +58,7 @@ def createAccount():
 
         try:
             cur.execute("""Insert into user_table (email, username, password) values
-                        (%s, %s, %s);""",
-                        (email, username, hashed_pw))
+                        (%s, %s, %s) RETURNING user_id;""", (email, username, hashed_pw))
 
             user_id = cur.fetchone()[0]
 
@@ -84,12 +85,12 @@ def login():
         password = request.form["password"]
 
         cur.execute(
-            """Select username, password from user_table where username = %s;""", (username))
+            "Select user_id, username, password from user_table where username = %s;", (username,))
 
         user = cur.fetchone()
 
-        if user and check_password_hash(user.password, password):
-            session["user_id"] = user.id
+        if user and check_password_hash(user[2], password):
+            session["user_id"] = user[0]
             return redirect(url_for("toDoList"))
         else:
             error = "Invalide username or password"
@@ -120,14 +121,14 @@ def account():
 
     user_id = session["user_id"]
 
-    cur.execute("""Select u.user_id, u.username, u.password, s.reminders, s.darkMode, s.pinUrgantTask, s.autoHideTask
+    cur.execute("""Select u.user_id, u.username, u.email, s.reminders, s.darkMode, s.pinUrgantTask, s.autoHideTask
                     from user_table u
-                    join settings_table s ON users.user_id = settings_table.user_id
+                    join settings_table s ON u.user_id = s.user_id
                     where u.user_id = %s""",
-                (user_id))
+                (user_id,))
 
     result = cur.fetchone()
-    return render_template("account.html", username=result.username, email=result.email, reminders=result.reminders, darkMode=result.darkMode, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask)
+    return render_template("account.html", username=result[1], email=result[2], reminders=result[3], darkMode=result[4], pinUrgantTask=result[5], autoHideTask=result[6])
 
 
 ALLOWED_KEYS_ACCOUNT = {"reminders",
@@ -149,8 +150,8 @@ def toggle_setting_account():
 
     user_id = session["user_id"]
 
-    cur.execute("""Update settings_table set {key} = %s where user_id = %s""",
-                (value, user_id))
+    cur.execute(f"Update settings_table set {key} = %s where user_id = %s",
+                (value, user_id,))
 
     conn.commit()
 
@@ -166,12 +167,12 @@ def settings():
 
     cur.execute("""Select u.user_id, s.reminders, s.alerts, s.darkMode, s.textSize, s.language, s.pinUrgantTask, s.autoHideTask, s.sortBy
                     from user_table u
-                    join settings_table s ON users.user_id = settings_table.user_id
+                    join settings_table s ON u.user_id = s.user_id
                     where u.user_id = %s""",
-                (user_id))
+                (user_id,))
 
     result = cur.fetchone()
-    return render_template("settings.html", reminders=result.reminders, alerts=result.alerts, darkMode=result.darkMode, textSize=result.textSize, language=result.language, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask, sortBy=result.sortBy)
+    return render_template("settings.html", reminders=result[1], alerts=result[2], darkMode=result[3], textSize=result[4], language=result[5], pinUrgantTask=result[6], autoHideTask=result[7], sortBy=result[8])
 
 
 ALLOWED_KEYS_SETTINGS = {"reminders", "alerts",
@@ -181,7 +182,7 @@ ALLOWED_KEYS_SETTINGS = {"reminders", "alerts",
 @app.route("/settings/toggle", methods=["PATCH"])
 def toggle_setting():
     if "user_id" not in session:
-        return jsonify({"error": "Not logged in"})
+        return jsonify({"error": "Not logged in"}), 401
 
     data = request.get_json()
     key = data.get("key")
@@ -193,8 +194,8 @@ def toggle_setting():
 
     user_id = session["user_id"]
 
-    cur.execute("""Update settings_table set {key} = %s where user_id = %s""",
-                (value, user_id))
+    cur.execute(
+        f"Update settings_table set {key} = %s where user_id = %s", (value, user_id,))
 
     conn.commit()
 
@@ -212,8 +213,8 @@ def saveAcc():
     email = data.get("newEmail")
     username = data.get("newUsername")
 
-    cur.execute("""Update user_table set username = '%s', email = '%s'
-                    where user_id = '%s';""",
+    cur.execute("""Update user_table set username = %s, email = %s
+                    where user_id = %s;""",
                 (username, email, user_id))
 
     conn.commit()
@@ -224,14 +225,14 @@ def saveAcc():
 @app.route("/deleteAcc")
 def deleteAcc():
     if "user_id" not in session:
-        return jsonify({"error": "Not logged in"})
+        return jsonify({"error": "Not logged in"}), 401
 
     user_id = session.get("user_id")
 
-    cur.execute("""Delete from user_table where user_id = %s""", (user_id))
+    cur.execute("""Delete from user_table where user_id = %s""", (user_id,))
     conn.commit()
 
-    cur.execute("""Delete from settings_table where user_id = %s""", (user_id))
+    cur.execute("""Delete from settings_table where user_id = %s""", (user_id,))
     conn.commit()
 
     return redirect(url_for("login"))
