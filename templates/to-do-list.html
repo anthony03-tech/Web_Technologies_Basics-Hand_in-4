@@ -49,6 +49,8 @@
       <input type="hidden" name="typeUrgent" id="id_urgent">
     </form>
 
+    <span>Chosen Type: </span><span id="chosenType"></span><br>
+
     <button onclick="saveTask()">Add Task</button>
 
     <p class="section-label">Today</p>
@@ -104,18 +106,24 @@
       document.getElementById("id_normal").value = type;
       document.getElementById("id_important").value = '';
       document.getElementById("id_urgent").value = '';
+
+      document.getElementById("chosenType").innerText = type;
     }
 
     function getImportant(type) {
       document.getElementById("id_normal").value = '';
       document.getElementById("id_important").value = type;
       document.getElementById("id_urgent").value = '';
+
+      document.getElementById("chosenType").innerText = type;
     }
 
     function getUrgent(type) {
       document.getElementById("id_normal").value = '';
       document.getElementById("id_important").value = type;
       document.getElementById("id_urgent").value = '';
+
+      document.getElementById("chosenType").innerText = type;
     }
 
     function saveTask() {
