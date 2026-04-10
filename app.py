@@ -37,7 +37,7 @@ cur.execute("""Create table if not exists settings_table (
             pinUrgantTask BOOLEAN NOT NULL,
             autoHideTask BOOLEAN NOT NULL,
             sortBy VARCHAR(255) NOT NULL,
-            CONSTRAINT fk_user_table
+            CONSTRAINT fk_settings_user
                 FOREIGN KEY(user_id)
                     REFERENCES user_table(user_id)
             );
@@ -47,11 +47,11 @@ cur.execute("""Create table if not exists settings_table (
 cur.execute("""Create table if not exists task_table (
             task_id SERIAL PRIMARY KEY,
             user_id INT,
-            task_name VARCHAR(255) NOT NULL UNIQUE,
+            task_name VARCHAR(255) NOT NULL,
             type VARCHAR(255) NOT NULL,
             deadline DATE NOT NULL,
             status BOOLEAN NOT NULL,
-            CONSTRAINT fk_user_table
+            CONSTRAINT fk_task_user
                 FOREIGN KEY(user_id)
                     REFERENCES user_table(user_id)
             );
@@ -249,13 +249,45 @@ def deleteAcc():
 
     user_id = session.get("user_id")
 
-    cur.execute("""Delete from user_table where user_id = %s""", (user_id,))
+    cur.execute("""Delete from user_table where user_id = %s""", (user_id))
     conn.commit()
 
-    cur.execute("""Delete from settings_table where user_id = %s""", (user_id,))
+    cur.execute("""Delete from task_table where user_id = /s""", (user_id))
+    conn.commit()
+
+    cur.execute("""Delete from settings_table where user_id = %s""", (user_id))
     conn.commit()
 
     return redirect(url_for("login"))
+
+
+@app.route("/addTask", methods=["PATCH"])
+def addTask():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"})
+
+    user_id = session.get("user_id")
+
+    data = request.json
+    taskName = data.get("taskName")
+    taskDate = data.get("taskDate")
+    taskType = data.get("type")
+
+    cur.execute(
+        """Select task_name from task_table where user_id = %s AND task_name = %s""", (user_id, taskName))
+    conn.commit()
+
+    result = cur.fetchone()
+
+    if result is None:
+        cur.execute("""Insert into task_table (user_id, task_name, type, deadline, status) values
+                (%s, %s, %s, %s, %s)""",
+                    (user_id, taskName, taskType, taskDate, False))
+        conn.commit()
+
+        return jsonify({'status': 'success'})
+    else:
+        return jsonify({'error': 'Task name already exists!'})
 
 
 app.run(debug=True)
