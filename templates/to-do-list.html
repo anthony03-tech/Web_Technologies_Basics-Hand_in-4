@@ -24,29 +24,29 @@
     <button onclick="editTask()">Edit Task</button>
     <button onclick="deleteTask()">Delete Task</button>
 
-    <form method="POST" id="taskForm">
+    <form action="#" method="POST">
       Task name: <input type="text" name="taskName">
       <br>
       <label>Deadline:</label>
       <input type="date" name="taskDate" id="id_date">
       <br>
-      <label>Choose a Status:</label>
+      <label>Choose a Type:</label>
     </form>
 
     <button onclick="getNormal('normal')">normal</button>
     <button onclick="getImportant('important')">important</button>
     <button onclick="getUrgent('urgent')">urgent</button>
 
-    <form method="POST" id="statusNormalForm">
-      <input type="hidden" name="statusNormal" id="id_normal">
+    <form action="#" method="POST">
+      <input type="hidden" name="typeNormal" id="id_normal">
     </form>
 
-    <form method="POST" id="statusImportantForm">
-      <input type="hidden" name="statusImportant" id="id_important">
+    <form action="#" method="POST">
+      <input type="hidden" name="typeImportant" id="id_important">
     </form>
 
-    <form method="POST" id="statusUrgentForm">
-      <input type="hidden" name="statusUrgent" id="id_urgent">
+    <form action="#" method="POST">
+      <input type="hidden" name="typeUrgent" id="id_urgent">
     </form>
 
     <button onclick="saveTask()">Add Task</button>
@@ -100,42 +100,62 @@
 
     function deleteTask() {}
 
-    function getNormal(status) {
-      document.getElementById("id_normal").value = status;
+    function getNormal(type) {
+      document.getElementById("id_normal").value = type;
       document.getElementById("id_important").value = '';
       document.getElementById("id_urgent").value = '';
     }
 
-    function getImportant(status) {
+    function getImportant(type) {
       document.getElementById("id_normal").value = '';
-      document.getElementById("id_important").value = status;
+      document.getElementById("id_important").value = type;
       document.getElementById("id_urgent").value = '';
     }
 
-    function getUrgent(status) {
+    function getUrgent(type) {
       document.getElementById("id_normal").value = '';
-      document.getElementById("id_important").value = status;
+      document.getElementById("id_important").value = type;
       document.getElementById("id_urgent").value = '';
     }
 
     function saveTask() {
-      let getNormal = document.getElementById("id_normal").value;
-      let getImportant = document.getElementById("id_important").value;
-      let getUrgent = document.getElementById("id_urgent").value;
+      let type = "";
 
-      document.getElementById("taskForm").submit();
+      let taskName = document.getElementsByName("taskName")[0].value;
+      let taskDate = document.getElementsByName("taskDate")[0].value;
 
-      if (getNormal != '') {
-        document.getElementById("statusNormalForm").submit();
+      let normalType = document.getElementsByName("typeNormal")[0].value;
+      let importantType = document.getElementsByName("typeImportant")[0].value;
+      let urgentType = document.getElementsByName("typeUrgent")[0].value;
+
+      if (normalType != "") {
+        type = normalType;
+      } else if (importantType != "") {
+        type = importantType
+      } else if (urgentType != "") {
+        type = urgentType
       }
 
-      if (getImportant != '') {
-        document.getElementById("statusImportantForm").submit();
-      }
-
-      if (getUrgent != '') {
-        document.getElementById("statusUrgentForm").submit();
-      }
+      fetch("/addTask", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": 'application/json'
+          },
+          body: JSON.stringify({
+            taskName: taskName,
+            taskDate: taskDate,
+            type: type
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            alert(data.error)
+          } else {
+            location.reload();
+          }
+        })
+        .catch(err => console.error("Request failed:", err));
     }
   </script>
 </body>
