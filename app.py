@@ -222,12 +222,18 @@ def toggle_setting():
     return jsonify({"key": key, "value": value})
 
 
-@app.route("/account/edit", methods=["PATCH"])
-def saveAcc():
+def getUserId():
     if "user_id" not in session:
         return jsonify({"error": "Not logged in"})
 
     user_id = session.get("user_id")
+
+    return user_id
+
+
+@app.route("/account/edit", methods=["PATCH"])
+def saveAcc():
+    user_id = getUserId()
 
     data = request.json
     email = data.get("newEmail")
@@ -244,10 +250,7 @@ def saveAcc():
 
 @app.route("/deleteAcc")
 def deleteAcc():
-    if "user_id" not in session:
-        return jsonify({"error": "Not logged in"}), 401
-
-    user_id = session.get("user_id")
+    user_id = getUserId()
 
     cur.execute("""Delete from user_table where user_id = %s""", (user_id))
     conn.commit()
@@ -263,10 +266,7 @@ def deleteAcc():
 
 @app.route("/addTask", methods=["PATCH"])
 def addTask():
-    if "user_id" not in session:
-        return jsonify({"error": "Not logged in"})
-
-    user_id = session.get("user_id")
+    user_id = getUserId()
 
     data = request.json
     taskName = data.get("taskName")
@@ -288,6 +288,11 @@ def addTask():
         return jsonify({'status': 'success'})
     else:
         return jsonify({'error': 'Task name already exists!'})
+
+
+@app.route("/showTask")
+def showTask():
+    user_id = getUserId()
 
 
 app.run(debug=True)
