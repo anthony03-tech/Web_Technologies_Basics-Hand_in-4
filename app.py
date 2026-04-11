@@ -88,6 +88,13 @@ def updatePw():
 
     try:
         cur.execute(
+            """Select email from user_table where email = %s""", (email,))
+        user = cur.fetchone()
+
+        if not user:
+            return jsonify({"error": "Email does not exist"}), 404
+
+        cur.execute(
             """Update user_table set password = %s where email = %s""", (hashed_pw, email))
         conn.commit()
         return jsonify({"success": True}), 200
