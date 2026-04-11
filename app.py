@@ -119,6 +119,13 @@ def createAccount():
         hashed_pw = generate_password_hash(password)
 
         try:
+            cur.execute(
+                """SELECT email FROM user_table WHERE email = %s""", (email,))
+            existing_user = cur.fetchone()
+
+            if existing_user:
+                return render_template("createAccount.html", error="Email already exists")
+
             cur.execute("""Insert into user_table (email, username, password) values
                         (%s, %s, %s) RETURNING user_id;""", (email, username, hashed_pw))
 
