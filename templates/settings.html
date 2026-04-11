@@ -105,6 +105,15 @@
     <p class="section-label">Account</p>
     <div class="settings-list">
       <div class="setting-row">
+        <span class="setting-icon">🔒</span>
+        <div class="setting-info">
+          <p class="setting-name">Change password</p>
+          <p class="setting-desc">Update your login password</p>
+        </div>
+        <button onclick="updatePw()" class="danger-btn" style="border-color: #ddd; color: #666">Update</button>
+      </div>
+
+      <div class="setting-row">
         <span class="setting-icon">🗑️</span>
         <div class="setting-info">
           <p class="setting-name danger">Delete account</p>
@@ -168,6 +177,10 @@
         }
       });
     });
+
+    function updatePw() {
+      window.location.href = "/forgotPassword";
+    }
   </script>
 </body>
 
