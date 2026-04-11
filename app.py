@@ -1,6 +1,7 @@
 from flask import Flask, request, redirect, render_template, jsonify, session, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 import psycopg2
+from datetime import date
 
 app = Flask(__name__)
 app.secret_key = "super-secret-key"
@@ -58,6 +59,15 @@ cur.execute("""Create table if not exists task_table (
 """)
 
 conn.commit()
+
+
+def getUserId():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"})
+
+    user_id = session.get("user_id")
+
+    return user_id
 
 
 @app.route("/")
@@ -120,7 +130,28 @@ def login():
 
 @app.route("/to-do-list")
 def toDoList():
-    return render_template("to-do-list.html")
+    user_id = getUserId()
+
+    today = date.today()
+    tasks_today = []
+    tasks_week = []
+    tasks_overdue = []
+
+    cur.execute(
+        """Select task_name, type, deadline, status from task_table where user_id = %s""", (user_id,))
+    rows = cur.fetchall()
+
+    for row in rows:
+        tasks = {"taskName": row[0], "taskType": row[1],
+                 "deadline": row[2], "status": row[3]}
+        if row[2] == today:
+            tasks_today.append(tasks)
+        elif row[2] < today:
+            tasks_overdue.append(tasks)
+        else:
+            tasks_week.append(tasks)
+
+    return render_template("to-do-list.html", tasks_today=tasks_today, tasks_overdue=tasks_overdue, tasks_week=tasks_week)
 
 
 @app.route("/logout")
@@ -222,15 +253,6 @@ def toggle_setting():
     return jsonify({"key": key, "value": value})
 
 
-def getUserId():
-    if "user_id" not in session:
-        return jsonify({"error": "Not logged in"})
-
-    user_id = session.get("user_id")
-
-    return user_id
-
-
 @app.route("/account/edit", methods=["PATCH"])
 def saveAcc():
     user_id = getUserId()
@@ -252,13 +274,13 @@ def saveAcc():
 def deleteAcc():
     user_id = getUserId()
 
-    cur.execute("""Delete from user_table where user_id = %s""", (user_id))
+    cur.execute("""Delete from settings_table where user_id = %s""", (user_id,))
     conn.commit()
 
-    cur.execute("""Delete from task_table where user_id = /s""", (user_id))
+    cur.execute("""Delete from task_table where user_id = %s""", (user_id,))
     conn.commit()
 
-    cur.execute("""Delete from settings_table where user_id = %s""", (user_id))
+    cur.execute("""Delete from user_table where user_id = %s""", (user_id,))
     conn.commit()
 
     return redirect(url_for("login"))
@@ -288,11 +310,6 @@ def addTask():
         return jsonify({'status': 'success'})
     else:
         return jsonify({'error': 'Task name already exists!'})
-
-
-@app.route("/showTask")
-def showTask():
-    user_id = getUserId()
 
 
 app.run(debug=True)
