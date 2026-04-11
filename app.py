@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
+app.run(host="0.0.0.0", port=5000)
 app.secret_key = "super-secret-key"
 
 # Database
