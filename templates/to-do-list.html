@@ -20,37 +20,40 @@
     <h1>To<span>-</span>Do</h1>
     <p class="subtitle">Click a task to mark it complete</p>
 
-    <button onclick="addTask()">Add new Task</button>
-    <button onclick="editTask()">Edit Task</button>
-    <button onclick="deleteTask()">Delete Task</button>
+    <button onclick="addTask()" id="btnAddTask">Add new Task</button>
+    <button onclick="editTask()" id="btnEditTask">Edit Task</button>
+    <button onclick="deleteTask()" id="btnDeleteTask">Delete Task</button>
 
-    <form action="#" method="POST">
-      Task name: <input type="text" name="taskName">
-      <br>
-      <label>Deadline:</label>
-      <input type="date" name="taskDate" id="id_date">
-      <br>
-      <label>Choose a Type:</label>
-      <button onclick="getNormal('normal')" type="button">normal</button>
-      <button onclick="getImportant('important')" type="button">important</button>
-      <button onclick="getUrgent('urgent')" type="button">urgent</button>
-    </form>
+    <div id="divAddTask" style="display: none;">
+      <form action="#" method="POST">
+        Task name: <input type="text" name="taskName">
+        <br>
+        <label>Deadline:</label>
+        <input type="date" name="taskDate" id="id_date">
+        <br>
+        <label>Choose a Type:</label>
+        <button onclick="getNormal('normal')" type="button">normal</button>
+        <button onclick="getImportant('important')" type="button">important</button>
+        <button onclick="getUrgent('urgent')" type="button">urgent</button>
+      </form>
 
-    <form action="#" method="POST">
-      <input type="hidden" name="typeNormal" id="id_normal">
-    </form>
+      <form action="#" method="POST">
+        <input type="hidden" name="typeNormal" id="id_normal">
+      </form>
 
-    <form action="#" method="POST">
-      <input type="hidden" name="typeImportant" id="id_important">
-    </form>
+      <form action="#" method="POST">
+        <input type="hidden" name="typeImportant" id="id_important">
+      </form>
 
-    <form action="#" method="POST">
-      <input type="hidden" name="typeUrgent" id="id_urgent">
-    </form>
+      <form action="#" method="POST">
+        <input type="hidden" name="typeUrgent" id="id_urgent">
+      </form>
 
-    <span>Chosen Type: </span><span id="chosenType"></span><br>
+      <span>Chosen Type: </span><span id="chosenType"></span><br>
 
-    <button onclick="saveTask()">Add Task</button>
+      <button onclick="saveTask()">Add Task</button>
+      <button onclick="caneclTask()">Cancel</button>
+    </div>
 
     <!-- Overdue Tasks -->
     {% if tasks_overdue %}
@@ -101,7 +104,21 @@
     {% endif %}
   </div>
   <script>
-    function addTask() {}
+    function addTask() {
+      document.getElementById("divAddTask").style.display = "block";
+
+      document.getElementById("btnAddTask").disabled = true;
+      document.getElementById("btnEditTask").disabled = true;
+      document.getElementById("btnDeleteTask").disabled = true;
+    }
+
+    function caneclTask() {
+      document.getElementById("divAddTask").style.display = "none";
+
+      document.getElementById("btnAddTask").disabled = false;
+      document.getElementById("btnEditTask").disabled = false;
+      document.getElementById("btnDeleteTask").disabled = false;
+    }
 
     function editTask() {}
 
@@ -141,34 +158,38 @@
       let importantType = document.getElementsByName("typeImportant")[0].value;
       let urgentType = document.getElementsByName("typeUrgent")[0].value;
 
-      if (normalType != "") {
-        type = normalType;
-      } else if (importantType != "") {
-        type = importantType
-      } else if (urgentType != "") {
-        type = urgentType
-      }
+      if (taskName != "" | taskDate != "" | normalType != "" | importantType != "" | urgentType != "") {
+        if (normalType != "") {
+          type = normalType;
+        } else if (importantType != "") {
+          type = importantType
+        } else if (urgentType != "") {
+          type = urgentType
+        }
 
-      fetch("/addTask", {
-          method: "PATCH",
-          headers: {
-            "Content-Type": 'application/json'
-          },
-          body: JSON.stringify({
-            taskName: taskName,
-            taskDate: taskDate,
-            type: type
+        fetch("/addTask", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": 'application/json'
+            },
+            body: JSON.stringify({
+              taskName: taskName,
+              taskDate: taskDate,
+              type: type
+            })
           })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) {
-            alert(data.error)
-          } else {
-            location.reload();
-          }
-        })
-        .catch(err => console.error("Request failed:", err));
+          .then(res => res.json())
+          .then(data => {
+            if (data.error) {
+              alert(data.error)
+            } else {
+              location.reload();
+            }
+          })
+          .catch(err => console.error("Request failed:", err));
+      } else {
+        alert("Please enter all information!")
+      }
     }
   </script>
 </body>
