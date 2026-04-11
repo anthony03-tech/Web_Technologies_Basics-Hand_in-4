@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
-app.run(host="0.0.0.0", port=5000)
 app.secret_key = "super-secret-key"
 
 # Database
@@ -430,4 +429,5 @@ def deleteTask():
         return jsonify({"error": str(e)}), 500
 
 
-app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
