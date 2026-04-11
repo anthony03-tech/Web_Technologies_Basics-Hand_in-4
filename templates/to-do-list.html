@@ -31,11 +31,10 @@
       <input type="date" name="taskDate" id="id_date">
       <br>
       <label>Choose a Type:</label>
+      <button onclick="getNormal('normal')" type="button">normal</button>
+      <button onclick="getImportant('important')" type="button">important</button>
+      <button onclick="getUrgent('urgent')" type="button">urgent</button>
     </form>
-
-    <button onclick="getNormal('normal')">normal</button>
-    <button onclick="getImportant('important')">important</button>
-    <button onclick="getUrgent('urgent')">urgent</button>
 
     <form action="#" method="POST">
       <input type="hidden" name="typeNormal" id="id_normal">
@@ -53,47 +52,53 @@
 
     <button onclick="saveTask()">Add Task</button>
 
-    <p class="section-label">Today</p>
+    <!-- Overdue Tasks -->
+    {% if tasks_overdue %}
     <ul class="todo-list">
+      <p class="section-label">Overdue</p>
+      {% for task in tasks_overdue %}
       <li class="todo-item">
-        <input type="checkbox" id="item1">
-        <label for="item1">Review project proposal
-          <span class="badge urgent">urgent</span></label>
+        <input type="checkbox" id="overdueItem{{ loop.index }}">
+        <label for="overdueItem{{ loop.index }}">{{ task.taskName }}
+          <span class="badge urgent">{{ task.taskType }}</span></label>
       </li>
-      <li class="todo-item">
-        <input type="checkbox" id="item2">
-        <label for="item2">Reply to pending emails <span class="badge">normal</span></label>
-      </li>
-      <li class="todo-item">
-        <input type="checkbox" id="item3">
-        <label for="item3">Buy groceries <span class="badge">normal</span></label>
-      </li>
-      <li class="todo-item">
-        <input type="checkbox" id="item4">
-        <label for="item4">Morning run <span class="badge">normal</span></label>
-      </li>
+      {% endfor %}
     </ul>
+    {% else %}
+    <p>No overdue tasks!</p>
+    {% endif %}
 
-    <p class="section-label">This week</p>
+    <!-- Today Tasks -->
+    {% if tasks_today %}
     <ul class="todo-list">
+      <p class="section-label">Today</p>
+      {% for task in tasks_today %}
       <li class="todo-item">
-        <input type="checkbox" id="item5">
-        <label for="item5">Finish reading chapter 4 <span class="badge">normal</span></label>
+        <input type="checkbox" id="todayItem{{ loop.index }}">
+        <label for="todayItem{{ loop.index }}"> {{ task.taskName }}
+          <span class="badge">{{ task.taskType }}</span></label>
       </li>
-      <li class="todo-item">
-        <input type="checkbox" id="item6">
-        <label for="item6">Schedule dentist appointment
-          <span class="badge urgent">urgent</span></label>
-      </li>
-      <li class="todo-item">
-        <input type="checkbox" id="item7">
-        <label for="item7">Clean the apartment <span class="badge">normal</span></label>
-      </li>
-      <li class="todo-item">
-        <input type="checkbox" id="item8">
-        <label for="item8">Pay electricity bill <span class="badge">normal</span></label>
-      </li>
+      {% endfor %}
     </ul>
+    {% else %}
+    <p>No tasks for Today!</p>
+    {% endif %}
+
+    <!-- Overdue Tasks -->
+    {% if tasks_week %}
+    <ul class="todo-list">
+      <p class="section-label">Week</p>
+      {% for task in tasks_week %}
+      <li class="todo-item">
+        <input type="checkbox" id="weekItem{{ loop.index }}">
+        <label for="weekItem{{ loop.index }}"> {{task.taskName }}
+          <span class="badge">{{ task.taskType }}</span></label>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No tasks in the next week!</p>
+    {% endif %}
   </div>
   <script>
     function addTask() {}
