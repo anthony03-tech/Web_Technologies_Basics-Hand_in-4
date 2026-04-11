@@ -100,7 +100,6 @@ def updatePw():
         return jsonify({"success": True}), 200
     except Exception as e:
         conn.rollback()
-        print(f"Error: {e}")
         return jsonify({"error": "Failed to save changes"}), 500
 
 
@@ -142,7 +141,6 @@ def createAccount():
         except Exception as e:
             conn.rollback()
             error = "User already exists"
-            print(f"Error: {e}")
 
     return render_template("createAccount.html", error=error)
 
@@ -164,7 +162,6 @@ def login():
             user = cur.fetchone()
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
             return render_template("login.html", error="Something went wrong, please try again")
 
         if user and check_password_hash(user[2], password):
@@ -191,7 +188,6 @@ def toDoList():
         rows = cur.fetchall()
     except Exception as e:
         conn.rollback()
-        print(f"Error: {e}")
         rows = []
 
     for row in rows:
@@ -236,7 +232,6 @@ def account():
         result = cur.fetchone()
     except Exception as e:
         conn.rollback()
-        print(f"Error: {e}")
         return redirect(url_for("login"))
 
     return render_template("account.html", username=result[1], email=result[2], reminders=result[3], darkMode=result[4], pinUrgantTask=result[5], autoHideTask=result[6])
@@ -271,7 +266,6 @@ def toggle_setting_account():
         conn.commit()
     except Exception as e:
         conn.rollback()
-        print(f"Error: {e}")
         return jsonify({"error": "Failed to update setting"}), 500
 
     return jsonify({"key": key, "value": value})
@@ -294,7 +288,6 @@ def settings():
         result = cur.fetchone()
     except Exception as e:
         conn.rollback()
-        print(f"Error: {e}")
 
     return render_template("settings.html", reminders=result[1], alerts=result[2], darkMode=result[3], textSize=result[4], language=result[5], pinUrgantTask=result[6], autoHideTask=result[7], sortBy=result[8])
 
@@ -325,7 +318,6 @@ def toggle_setting():
         conn.commit()
     except Exception as e:
         conn.rollback()
-        print(f"Error: {e}")
 
     return jsonify({"key": key, "value": value})
 
@@ -353,7 +345,6 @@ def saveAcc():
         return jsonify({'status': 'success'}), 200
     except Exception as e:
         conn.rollback()
-        print(f"Error: {e}")
         return jsonify({"error": "Failed to save changes"}), 500
 
 
@@ -369,7 +360,6 @@ def deleteAcc():
         conn.commit()
     except Exception as e:
         conn.rollback()
-        print(f"Error: {e}")
         return redirect(url_for("account"))
 
     session.clear()
@@ -406,7 +396,6 @@ def addTask():
         return jsonify({'status': 'success'}), 201
     except Exception as e:
         conn.rollback()
-        print(f"Error: {e}")
         return jsonify({"error": "Failed to add task"}), 500
 
 
