@@ -23,6 +23,8 @@
     <button onclick="addTask()" id="btnAddTask">Add new Task</button>
     <button onclick="editTask()" id="btnEditTask">Edit Task</button>
     <button onclick="deleteTask()" id="btnDeleteTask">Delete Task</button>
+    <button onclick="cancelDelete()" id="btnCancelDeleteTask" style="display: none;">Save changes</button>
+    <p id="deleteMessage" class="subtitle" style="color: red; display: none;">There is no undo after deleting a task</p>
 
     <div id="divAddTask" style="display: none;">
       <form action="#" method="POST">
@@ -60,10 +62,13 @@
     <ul class="todo-list">
       <p class="section-label">Overdue</p>
       {% for task in tasks_overdue %}
-      <li class="todo-item">
+      <li class="todo-item" id="overduetodo{{ loop.index }}">
         <input type="checkbox" id="overdueItem{{ loop.index }}">
         <label for="overdueItem{{ loop.index }}">{{ task.taskName }}
-          <span class="badge urgent">{{ task.taskType }}</span></label>
+          <span class="badge urgent">{{ task.taskType }}</span>
+        </label>
+        <div class="divDeleteTask" style="display: none;"><br><button
+            onclick="overdueDeleteTask('{{ task.taskName }}', '{{ loop.index }}')">Delete</button></div>
       </li>
       {% endfor %}
     </ul>
@@ -76,10 +81,13 @@
     <ul class="todo-list">
       <p class="section-label">Today</p>
       {% for task in tasks_today %}
-      <li class="todo-item">
+      <li class="todo-item" id="todaytodo{{ loop.index }}">
         <input type="checkbox" id="todayItem{{ loop.index }}">
         <label for="todayItem{{ loop.index }}"> {{ task.taskName }}
-          <span class="badge">{{ task.taskType }}</span></label>
+          <span class="badge">{{ task.taskType }}</span>
+        </label>
+        <div class="divDeleteTask" style="display: none;"><br><button
+            onclick="todayDeleteTask('{{ task.taskName }}', '{{ loop.index }}')">Delete</button></div>
       </li>
       {% endfor %}
     </ul>
@@ -90,17 +98,20 @@
     <!-- Overdue Tasks -->
     {% if tasks_week %}
     <ul class="todo-list">
-      <p class="section-label">Week</p>
+      <p class="section-label">Coming up</p>
       {% for task in tasks_week %}
-      <li class="todo-item">
-        <input type="checkbox" id="weekItem{{ loop.index }}">
-        <label for="weekItem{{ loop.index }}"> {{task.taskName }}
-          <span class="badge">{{ task.taskType }}</span></label>
+      <li class="todo-item" id="comingtodo{{ loop.index }}">
+        <input type="checkbox" id="comingItem{{ loop.index }}">
+        <label for="comingItem{{ loop.index }}"> {{task.taskName }}
+          <span class="badge">{{ task.taskType }}</span>
+        </label>
+        <div class="divDeleteTask" style="display: none;"><br><button
+            onclick="comingDeleteTask('{{ task.taskName }}', '{{ loop.index }}')">Delete</button></div>
       </li>
       {% endfor %}
     </ul>
     {% else %}
-    <p>No tasks in the next week!</p>
+    <p>No tasks coming up task!</p>
     {% endif %}
   </div>
   <script>
@@ -120,9 +131,82 @@
       document.getElementById("btnDeleteTask").disabled = false;
     }
 
-    function editTask() {}
+    function editTask() {
 
-    function deleteTask() {}
+    }
+
+    function deleteTask() {
+      document.querySelectorAll(".divDeleteTask").forEach(div => div.style.display = "block");
+      document.getElementById("btnAddTask").disabled = true;
+      document.getElementById("btnEditTask").disabled = true;
+      document.getElementById("btnDeleteTask").disabled = true;
+
+      document.getElementById("deleteMessage").style.display = "block";
+      document.getElementById("btnCancelDeleteTask").style.display = "block";
+    }
+
+    function cancelDelete() {
+      document.querySelectorAll(".divDeleteTask").forEach(div => div.style.display = "none");
+      document.getElementById("btnAddTask").disabled = false;
+      document.getElementById("btnEditTask").disabled = false;
+      document.getElementById("btnDeleteTask").disabled = false;
+
+      document.getElementById("deleteMessage").style.display = "none";
+      document.getElementById("btnCancelDeleteTask").style.display = "none";
+
+      location.reload();
+    }
+
+    function overdueDeleteTask(taskName, index) {
+      document.getElementById("overduetodo" + index).classList.add("deletedTask");
+
+      fetch("/deleteTask", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": 'application/json'
+          },
+          body: JSON.stringify({
+            taskName: taskName
+          })
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
+    }
+
+    function todayDeleteTask(taskName, index) {
+      document.getElementById("todaytodo" + index).classList.add("deletedTask");
+
+      fetch("/deleteTask", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": 'application/json'
+          },
+          body: JSON.stringify({
+            taskName: taskName
+          })
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
+    }
+
+    function comingDeleteTask(taskName, index) {
+      document.getElementById("comingtodo" + index).classList.add("deletedTask");
+
+      fetch("/deleteTask", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": 'application/json'
+          },
+          body: JSON.stringify({
+            taskName: taskName
+          })
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
+    }
 
     function getNormal(type) {
       document.getElementById("id_normal").value = type;
