@@ -145,6 +145,70 @@ h1 span {
   border: 2px solid red;
 }
 
+#formAddTask {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+#formAddTask input[type="text"],
+#formAddTask input[type="date"] {
+  font-family: sans-serif;
+  font-size: 14px;
+  padding: 8px 12px;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  background: #f7f7f7;
+  width: 100%;
+  outline: none;
+}
+
+#formAddTask input:focus {
+  border-color: #aaa;
+  background: #fff;
+}
+
+button {
+  font-family: sans-serif;
+  font-size: 13px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  color: #666;
+  background: transparent;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #aaa;
+  color: #444;
+}
+
+button[onclick="saveTask()"] {
+  background: #222;
+  color: #fff;
+  border-color: #222;
+}
+
+button[onclick="saveTask()"]:hover {
+  opacity: 0.85;
+}
+
+p {
+  font-size: 15px;
+}
+
+.addTaskLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #999;
+}
+
 /* Breakpoint 1 — Tablet */
 @media (max-width: 680px) {
   body {
