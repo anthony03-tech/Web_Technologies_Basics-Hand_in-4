@@ -75,6 +75,28 @@ def homePage():
     return redirect(url_for("login"))
 
 
+@app.route("/updatePw", methods=["PATCH"])
+def updatePw():
+    data = request.get_json()
+    email = data.get("email")
+    newPw = data.get("newPw")
+
+    if not email or not newPw:
+        return jsonify({"error": "All fields are required"}), 400
+
+    hashed_pw = generate_password_hash(newPw)
+
+    try:
+        cur.execute(
+            """Update user_table set password = %s where email = %s""", (hashed_pw, email))
+        conn.commit()
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}")
+        return jsonify({"error": "Failed to save changes"}), 500
+
+
 @app.route("/createAccount", methods=["GET", "POST"])
 def createAccount():
     error = ""
