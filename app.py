@@ -354,6 +354,7 @@ def addTask():
 
     if not taskName or not taskDate or not taskType:
         return jsonify({"error": "All fields are required"}), 400
+
     try:
         cur.execute(
             """Select task_name from task_table where user_id = %s AND task_name = %s""", (user_id, taskName))
@@ -371,6 +372,26 @@ def addTask():
         conn.rollback()
         print(f"Error: {e}")
         return jsonify({"error": "Failed to add task"}), 500
+
+
+@app.route("/deleteTask", methods=["DELETE"])
+def deleteTask():
+    data = request.json
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+
+    taskName = data.get("taskName")
+
+    try:
+        cur.execute(
+            """Delete from task_table where task_name = %s""", (taskName,))
+
+        conn.commit()
+
+        return jsonify({"message": "Task deleted successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
 
 
 app.run(debug=True)
