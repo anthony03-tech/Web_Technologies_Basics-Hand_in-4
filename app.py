@@ -11,21 +11,26 @@ app.secret_key = "super-secret-key"
 # Database
 load_dotenv()
 
-conn = psycopg2.connect(
-    host=os.getenv("DB_HOST"),
-    dbname=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    port=os.getenv("DB_PORT")
-)
 
-cur = conn.cursor()
+def get_db():
+    conn = psycopg2.connect(
+        host=os.getenv("DB_HOST"),
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        port=os.getenv("DB_PORT")
+    )
+    return conn
 
 # cur.execute("""Drop table if exists settings_table""")
 # cur.execute("""Drop table if exists task_table""")
 # cur.execute("""Drop table if exists user_table""")
 
 # conn.commit()
+
+
+conn = get_db()
+cur = conn.cursor()
 
 # User table
 cur.execute("""Create table if not exists user_table (
@@ -96,6 +101,9 @@ def updatePw():
 
     hashed_pw = generate_password_hash(newPw)
 
+    conn = get_db()
+    cur = conn.cursor()
+
     try:
         cur.execute(
             """Select email from user_table where email = %s""", (email,))
@@ -111,6 +119,9 @@ def updatePw():
     except Exception as e:
         conn.rollback()
         return jsonify({"error": "Failed to save changes"}), 500
+    finally:
+        cur.close()
+        conn.close()
 
 
 @app.route("/createAccount", methods=["GET", "POST"])
@@ -126,6 +137,9 @@ def createAccount():
             return render_template("createAccount.html", error="All fields are required")
 
         hashed_pw = generate_password_hash(password)
+
+        conn = get_db()
+        cur = conn.cursor()
 
         try:
             cur.execute(
@@ -151,6 +165,9 @@ def createAccount():
         except Exception as e:
             conn.rollback()
             error = "User already exists"
+        finally:
+            cur.close()
+            conn.close()
 
     return render_template("createAccount.html", error=error)
 
@@ -166,6 +183,9 @@ def login():
         if not username or not password:
             return render_template("login.html", error="All fields are required")
 
+        conn = get_db()
+        cur = conn.cursor()
+
         try:
             cur.execute(
                 "Select user_id, username, password from user_table where username = %s;", (username,))
@@ -173,6 +193,9 @@ def login():
         except Exception as e:
             conn.rollback()
             return render_template("login.html", error="Something went wrong, please try again")
+        finally:
+            cur.close()
+            conn.close()
 
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
@@ -192,6 +215,9 @@ def toDoList():
     tasks_week = []
     tasks_overdue = []
 
+    conn = get_db()
+    cur = conn.cursor()
+
     try:
         cur.execute(
             """Select task_name, type, deadline, status from task_table where user_id = %s""", (user_id,))
@@ -199,6 +225,9 @@ def toDoList():
     except Exception as e:
         conn.rollback()
         rows = []
+    finally:
+        cur.close()
+        conn.close()
 
     for row in rows:
         tasks = {"taskName": row[0], "taskType": row[1],
@@ -232,6 +261,9 @@ def account():
 
     user_id = session["user_id"]
 
+    conn = get_db()
+    cur = conn.cursor()
+
     try:
         cur.execute("""Select u.user_id, u.username, u.email, s.reminders, s.darkMode, s.pinUrgantTask, s.autoHideTask
                         from user_table u
@@ -243,6 +275,9 @@ def account():
     except Exception as e:
         conn.rollback()
         return redirect(url_for("login"))
+    finally:
+        cur.close()
+        conn.close()
 
     return render_template("account.html", username=result[1], email=result[2], reminders=result[3], darkMode=result[4], pinUrgantTask=result[5], autoHideTask=result[6])
 
@@ -255,6 +290,9 @@ ALLOWED_KEYS_ACCOUNT = {"reminders",
 def toggle_setting_account():
     if "user_id" not in session:
         return jsonify({"error": "Not logged in"}), 401
+
+    conn = get_db()
+    cur = conn.cursor()
 
     data = request.get_json()
     key = data.get("key")
@@ -277,6 +315,9 @@ def toggle_setting_account():
     except Exception as e:
         conn.rollback()
         return jsonify({"error": "Failed to update setting"}), 500
+    finally:
+        cur.close()
+        conn.close()
 
     return jsonify({"key": key, "value": value})
 
@@ -288,6 +329,9 @@ def settings():
 
     user_id = session["user_id"]
 
+    conn = get_db()
+    cur = conn.cursor()
+
     try:
         cur.execute("""Select u.user_id, s.reminders, s.alerts, s.darkMode, s.textSize, s.language, s.pinUrgantTask, s.autoHideTask, s.sortBy
                         from user_table u
@@ -298,6 +342,9 @@ def settings():
         result = cur.fetchone()
     except Exception as e:
         conn.rollback()
+    finally:
+        cur.close()
+        conn.close()
 
     return render_template("settings.html", reminders=result[1], alerts=result[2], darkMode=result[3], textSize=result[4], language=result[5], pinUrgantTask=result[6], autoHideTask=result[7], sortBy=result[8])
 
@@ -310,6 +357,9 @@ ALLOWED_KEYS_SETTINGS = {"reminders", "alerts",
 def toggle_setting():
     if "user_id" not in session:
         return jsonify({"error": "Not logged in"}), 401
+
+    conn = get_db()
+    cur = conn.cursor()
 
     data = request.get_json()
     key = data.get("key")
@@ -328,6 +378,9 @@ def toggle_setting():
         conn.commit()
     except Exception as e:
         conn.rollback()
+    finally:
+        cur.close()
+        conn.close()
 
     return jsonify({"key": key, "value": value})
 
@@ -335,6 +388,9 @@ def toggle_setting():
 @app.route("/account/edit", methods=["PATCH"])
 def saveAcc():
     user_id = getUserId()
+
+    conn = get_db()
+    cur = conn.cursor()
 
     data = request.json
     if not data:
@@ -356,11 +412,17 @@ def saveAcc():
     except Exception as e:
         conn.rollback()
         return jsonify({"error": "Failed to save changes"}), 500
+    finally:
+        cur.close()
+        conn.close()
 
 
 @app.route("/deleteAcc")
 def deleteAcc():
     user_id = getUserId()
+
+    conn = get_db()
+    cur = conn.cursor()
 
     try:
         cur.execute(
@@ -371,6 +433,9 @@ def deleteAcc():
     except Exception as e:
         conn.rollback()
         return redirect(url_for("account"))
+    finally:
+        cur.close()
+        conn.close()
 
     session.clear()
     return redirect(url_for("login"))
@@ -379,6 +444,9 @@ def deleteAcc():
 @app.route("/addTask", methods=["PATCH"])
 def addTask():
     user_id = getUserId()
+
+    conn = get_db()
+    cur = conn.cursor()
 
     data = request.json
     if not data:
@@ -407,6 +475,9 @@ def addTask():
     except Exception as e:
         conn.rollback()
         return jsonify({"error": "Failed to add task"}), 500
+    finally:
+        cur.close()
+        conn.close()
 
 
 @app.route("/deleteTask", methods=["DELETE"])
@@ -414,6 +485,9 @@ def deleteTask():
     data = request.json
     if not data:
         return jsonify({"error": "Invalid request"}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
 
     taskName = data.get("taskName")
 
@@ -427,6 +501,9 @@ def deleteTask():
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
+    finally:
+        cur.close()
+        conn.close()
 
 
 if __name__ == "__main__":
