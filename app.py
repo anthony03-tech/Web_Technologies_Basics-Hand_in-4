@@ -299,16 +299,26 @@ def saveAcc():
     user_id = getUserId()
 
     data = request.json
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+
     email = data.get("newEmail")
     username = data.get("newUsername")
 
-    cur.execute("""Update user_table set username = %s, email = %s
-                    where user_id = %s;""",
-                (username, email, user_id))
+    if not email or not username:
+        return jsonify({"error": "All fields are required"}), 400
 
-    conn.commit()
+    try:
+        cur.execute("""Update user_table set username = %s, email = %s
+                        where user_id = %s;""",
+                    (username, email, user_id))
 
-    return jsonify({'status': 'success'})
+        conn.commit()
+        return jsonify({'status': 'success'}), 200
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}")
+        return jsonify({"error": "Failed to save changes"}), 500
 
 
 @app.route("/deleteAcc")
