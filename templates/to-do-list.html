@@ -21,23 +21,29 @@
     <p class="subtitle">Click a task to mark it complete</p>
 
     <button onclick="addTask()" id="btnAddTask">Add new Task</button>
-    <button onclick="editTask()" id="btnEditTask">Edit Task</button>
     <button onclick="deleteTask()" id="btnDeleteTask">Delete Task</button>
     <button onclick="cancelDelete()" id="btnCancelDeleteTask" style="display: none;">Save changes</button>
     <p id="deleteMessage" class="subtitle" style="color: red; display: none;">There is no undo after deleting a task</p>
 
     <div id="divAddTask" style="display: none;">
-      <form action="#" method="POST">
-        Task name: <input type="text" name="taskName">
-        <br>
-        <label>Deadline:</label>
+      <form action="#" id="formAddTask" method="POST">
+        <label class="addTaskLabel">Task name:</label> <input type="text" name="taskName">
+        <label class="addTaskLabel">Deadline:</label>
         <input type="date" name="taskDate" id="id_date">
-        <br>
-        <label>Choose a Type:</label>
-        <button onclick="getNormal('normal')" type="button">normal</button>
-        <button onclick="getImportant('important')" type="button">important</button>
-        <button onclick="getUrgent('urgent')" type="button">urgent</button>
+
+        <label class="addTaskLabel">Choose a Type:</label>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button onclick="getNormal('Normal')" type="button">normal</button>
+          <button onclick="getImportant('Important')" type="button">important</button>
+          <button onclick="getUrgent('Urgent')" type="button">urgent</button>
+        </div>
+
+        <label class="addTaskLabel">Chosen Type:</label>
+        <p id="chosenType"></p>
       </form>
+
+      <button onclick="saveTask()">Add Task</button>
+      <button onclick="caneclTask()">Cancel</button>
 
       <form action="#" method="POST">
         <input type="hidden" name="typeNormal" id="id_normal">
@@ -50,11 +56,6 @@
       <form action="#" method="POST">
         <input type="hidden" name="typeUrgent" id="id_urgent">
       </form>
-
-      <span>Chosen Type: </span><span id="chosenType"></span><br>
-
-      <button onclick="saveTask()">Add Task</button>
-      <button onclick="caneclTask()">Cancel</button>
     </div>
 
     <!-- Overdue Tasks -->
@@ -65,7 +66,7 @@
       <li class="todo-item" id="overduetodo{{ loop.index }}">
         <input type="checkbox" id="overdueItem{{ loop.index }}">
         <label for="overdueItem{{ loop.index }}">{{ task.taskName }}
-          <span class="badge urgent">{{ task.taskType }}</span>
+          <span class="badge">{{ task.taskType }}</span>
         </label>
         <div class="divDeleteTask" style="display: none;"><br><button
             onclick="overdueDeleteTask('{{ task.taskName }}', '{{ loop.index }}')">Delete</button></div>
@@ -119,7 +120,6 @@
       document.getElementById("divAddTask").style.display = "block";
 
       document.getElementById("btnAddTask").disabled = true;
-      document.getElementById("btnEditTask").disabled = true;
       document.getElementById("btnDeleteTask").disabled = true;
     }
 
@@ -127,18 +127,12 @@
       document.getElementById("divAddTask").style.display = "none";
 
       document.getElementById("btnAddTask").disabled = false;
-      document.getElementById("btnEditTask").disabled = false;
       document.getElementById("btnDeleteTask").disabled = false;
-    }
-
-    function editTask() {
-
     }
 
     function deleteTask() {
       document.querySelectorAll(".divDeleteTask").forEach(div => div.style.display = "block");
       document.getElementById("btnAddTask").disabled = true;
-      document.getElementById("btnEditTask").disabled = true;
       document.getElementById("btnDeleteTask").disabled = true;
 
       document.getElementById("deleteMessage").style.display = "block";
@@ -148,7 +142,6 @@
     function cancelDelete() {
       document.querySelectorAll(".divDeleteTask").forEach(div => div.style.display = "none");
       document.getElementById("btnAddTask").disabled = false;
-      document.getElementById("btnEditTask").disabled = false;
       document.getElementById("btnDeleteTask").disabled = false;
 
       document.getElementById("deleteMessage").style.display = "none";
