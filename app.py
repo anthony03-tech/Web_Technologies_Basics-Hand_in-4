@@ -2,13 +2,23 @@ from flask import Flask, request, redirect, render_template, jsonify, session, u
 from werkzeug.security import generate_password_hash, check_password_hash
 import psycopg2
 from datetime import date
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 app.secret_key = "super-secret-key"
 
 # Database
-conn = psycopg2.connect(host="localhost", dbname="postgres",
-                        user="postgres", password="admin", port="5432")
+load_dotenv()
+
+conn = psycopg2.connect(
+    host=os.getenv("DB_HOST"),
+    dbname=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    port=os.getenv("DB_PORT")
+)
+
 cur = conn.cursor()
 
 # cur.execute("""Drop table if exists settings_table""")
