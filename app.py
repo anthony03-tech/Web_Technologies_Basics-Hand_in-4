@@ -200,7 +200,7 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/forgotPassword")
+@app.route("/forgotPassword", methods=["GET", "POST"])
 def forgotPassword():
     return render_template("forgotPassword.html")
 
