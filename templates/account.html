@@ -23,14 +23,6 @@
   pointer-events: none; white-space: nowrap; z-index: 100;
 "></div>
 
-    <!-- <div>
-      <button id="user-1" class="active" onclick="loadUser(1)">
-        User Profil 1
-      </button>
-      <button id="user-2" onclick="loadUser(2)">User Profil 2</button>
-      <button id="user-3" onclick="loadUser(3)">User Profil 3</button>
-    </div> -->
-
     <h1>Profile</h1>
 
     <!-- Profile -->
@@ -133,26 +125,6 @@
 
     <p class="footer-note">— your data is yours —</p>
   </div>
-  <!-- <script>
-    async function loadUser(id) {
-      try {
-        const res = await fetch(`/account/${id}`);
-        const data = await res.json();
-
-        document.getElementById("profile-name").textContent = data.name;
-        document.getElementById("profile-email").textContent = data.email;
-        document.getElementById("avatar").textContent = data.avatar;
-        document.getElementById("profile-since").textContent = data.member;
-
-        document
-          .querySelectorAll("button")
-          .forEach((btn) => btn.classList.remove("active"));
-        document.getElementById(`user-${id}`).classList.add("active");
-      } catch (err) {
-        alert("Failed to load user: " + err.message);
-      }
-    }
-  </script> -->
   <script>
     let toastTimer;
 
