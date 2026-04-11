@@ -84,6 +84,9 @@ def createAccount():
         password = request.form["password"]
         email = request.form["email"]
 
+        if not username or not password or not email:
+            return render_template("createAccount.html", error="All fields are required")
+
         hashed_pw = generate_password_hash(password)
 
         try:
@@ -100,8 +103,10 @@ def createAccount():
 
             return redirect(url_for("login"))
 
-        except Exception:
+        except Exception as e:
+            conn.rollback()
             error = "User already exists"
+            print(f"Error: {e}")
 
     return render_template("createAccount.html", error=error)
 
@@ -114,10 +119,17 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
-        cur.execute(
-            "Select user_id, username, password from user_table where username = %s;", (username,))
+        if not username or not password:
+            return render_template("login.html", error="All fields are required")
 
-        user = cur.fetchone()
+        try:
+            cur.execute(
+                "Select user_id, username, password from user_table where username = %s;", (username,))
+            user = cur.fetchone()
+        except Exception as e:
+            conn.rollback()
+            print(f"Error: {e}")
+            return render_template("login.html", error="Something went wrong, please try again")
 
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]
@@ -137,13 +149,19 @@ def toDoList():
     tasks_week = []
     tasks_overdue = []
 
-    cur.execute(
-        """Select task_name, type, deadline, status from task_table where user_id = %s""", (user_id,))
-    rows = cur.fetchall()
+    try:
+        cur.execute(
+            """Select task_name, type, deadline, status from task_table where user_id = %s""", (user_id,))
+        rows = cur.fetchall()
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}")
+        rows = []
 
     for row in rows:
         tasks = {"taskName": row[0], "taskType": row[1],
-                 "deadline": row[2], "status": row[3]}
+                 "deadline": row[2], "status": row[3]
+                 }
         if row[2] == today:
             tasks_today.append(tasks)
         elif row[2] < today:
@@ -172,13 +190,19 @@ def account():
 
     user_id = session["user_id"]
 
-    cur.execute("""Select u.user_id, u.username, u.email, s.reminders, s.darkMode, s.pinUrgantTask, s.autoHideTask
-                    from user_table u
-                    join settings_table s ON u.user_id = s.user_id
-                    where u.user_id = %s""",
-                (user_id,))
+    try:
+        cur.execute("""Select u.user_id, u.username, u.email, s.reminders, s.darkMode, s.pinUrgantTask, s.autoHideTask
+                        from user_table u
+                        join settings_table s ON u.user_id = s.user_id
+                        where u.user_id = %s""",
+                    (user_id,))
 
-    result = cur.fetchone()
+        result = cur.fetchone()
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}")
+        return redirect(url_for("login"))
+
     return render_template("account.html", username=result[1], email=result[2], reminders=result[3], darkMode=result[4], pinUrgantTask=result[5], autoHideTask=result[6])
 
 
@@ -199,12 +223,20 @@ def toggle_setting_account():
     if key not in ALLOWED_KEYS_ACCOUNT:
         return jsonify({"error": "Invalid setting"}), 400
 
+    if value is None:
+        return jsonify({"error": "Missing value"}), 400
+
     user_id = session["user_id"]
 
-    cur.execute(f"Update settings_table set {key} = %s where user_id = %s",
-                (value, user_id,))
+    try:
+        cur.execute(f"Update settings_table set {key} = %s where user_id = %s",
+                    (value, user_id,))
 
-    conn.commit()
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}")
+        return jsonify({"error": "Failed to update setting"}), 500
 
     return jsonify({"key": key, "value": value})
 
@@ -216,13 +248,18 @@ def settings():
 
     user_id = session["user_id"]
 
-    cur.execute("""Select u.user_id, s.reminders, s.alerts, s.darkMode, s.textSize, s.language, s.pinUrgantTask, s.autoHideTask, s.sortBy
-                    from user_table u
-                    join settings_table s ON u.user_id = s.user_id
-                    where u.user_id = %s""",
-                (user_id,))
+    try:
+        cur.execute("""Select u.user_id, s.reminders, s.alerts, s.darkMode, s.textSize, s.language, s.pinUrgantTask, s.autoHideTask, s.sortBy
+                        from user_table u
+                        join settings_table s ON u.user_id = s.user_id
+                        where u.user_id = %s""",
+                    (user_id,))
 
-    result = cur.fetchone()
+        result = cur.fetchone()
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}")
+
     return render_template("settings.html", reminders=result[1], alerts=result[2], darkMode=result[3], textSize=result[4], language=result[5], pinUrgantTask=result[6], autoHideTask=result[7], sortBy=result[8])
 
 
@@ -245,10 +282,14 @@ def toggle_setting():
 
     user_id = session["user_id"]
 
-    cur.execute(
-        f"Update settings_table set {key} = %s where user_id = %s", (value, user_id,))
+    try:
+        cur.execute(
+            f"Update settings_table set {key} = %s where user_id = %s", (value, user_id,))
 
-    conn.commit()
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}")
 
     return jsonify({"key": key, "value": value})
 
@@ -274,15 +315,18 @@ def saveAcc():
 def deleteAcc():
     user_id = getUserId()
 
-    cur.execute("""Delete from settings_table where user_id = %s""", (user_id,))
-    conn.commit()
+    try:
+        cur.execute(
+            """Delete from settings_table where user_id = %s""", (user_id,))
+        cur.execute("""Delete from task_table where user_id = %s""", (user_id,))
+        cur.execute("""Delete from user_table where user_id = %s""", (user_id,))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}")
+        return redirect(url_for("account"))
 
-    cur.execute("""Delete from task_table where user_id = %s""", (user_id,))
-    conn.commit()
-
-    cur.execute("""Delete from user_table where user_id = %s""", (user_id,))
-    conn.commit()
-
+    session.clear()
     return redirect(url_for("login"))
 
 
@@ -291,25 +335,32 @@ def addTask():
     user_id = getUserId()
 
     data = request.json
+    if not data:
+        return jsonify({"error": "Invalid request"}), 400
+
     taskName = data.get("taskName")
     taskDate = data.get("taskDate")
     taskType = data.get("type")
 
-    cur.execute(
-        """Select task_name from task_table where user_id = %s AND task_name = %s""", (user_id, taskName))
-    conn.commit()
+    if not taskName or not taskDate or not taskType:
+        return jsonify({"error": "All fields are required"}), 400
+    try:
+        cur.execute(
+            """Select task_name from task_table where user_id = %s AND task_name = %s""", (user_id, taskName))
+        result = cur.fetchone()
 
-    result = cur.fetchone()
+        if result:
+            return jsonify({"error": "Task name already exists!"}), 409
 
-    if result is None:
         cur.execute("""Insert into task_table (user_id, task_name, type, deadline, status) values
-                (%s, %s, %s, %s, %s)""",
+                    (%s, %s, %s, %s, %s)""",
                     (user_id, taskName, taskType, taskDate, False))
         conn.commit()
-
-        return jsonify({'status': 'success'})
-    else:
-        return jsonify({'error': 'Task name already exists!'})
+        return jsonify({'status': 'success'}), 201
+    except Exception as e:
+        conn.rollback()
+        print(f"Error: {e}")
+        return jsonify({"error": "Failed to add task"}), 500
 
 
 app.run(debug=True)
