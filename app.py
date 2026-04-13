@@ -78,11 +78,9 @@ conn.commit()
 
 def getUserId():
     if "user_id" not in session:
-        return jsonify({"error": "Not logged in"})
+        return None
 
-    user_id = session.get("user_id")
-
-    return user_id
+    return session.get("user_id")
 
 
 @app.route("/")
@@ -390,6 +388,8 @@ def toggle_setting():
 @app.route("/account/edit", methods=["PATCH"])
 def saveAcc():
     user_id = getUserId()
+    if user_id is None:
+        return jsonify({"error": "Not logged in"}), 401
 
     conn = get_db()
     cur = conn.cursor()
@@ -422,6 +422,8 @@ def saveAcc():
 @app.route("/deleteAcc")
 def deleteAcc():
     user_id = getUserId()
+    if user_id is None:
+        return jsonify({"error": "Not logged in"}), 401
 
     conn = get_db()
     cur = conn.cursor()
@@ -446,6 +448,9 @@ def deleteAcc():
 @app.route("/addTask", methods=["PATCH"])
 def addTask():
     user_id = getUserId()
+
+    if user_id is None:
+        return jsonify({"error": "Not logged in"}), 401
 
     conn = get_db()
     cur = conn.cursor()
