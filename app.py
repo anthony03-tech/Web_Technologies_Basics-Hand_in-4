@@ -279,7 +279,8 @@ def account():
         cur.close()
         conn.close()
 
-    return render_template("account.html", username=result[1], email=result[2], reminders=result[3], darkMode=result[4], pinUrgantTask=result[5], autoHideTask=result[6])
+    return render_template("account.html", username=result[1], email=result[2], reminders=result[3],
+                           darkMode=result[4], pinUrgantTask=result[5], autoHideTask=result[6])
 
 
 ALLOWED_KEYS_ACCOUNT = {"reminders",
@@ -346,7 +347,8 @@ def settings():
         cur.close()
         conn.close()
 
-    return render_template("settings.html", reminders=result[1], alerts=result[2], darkMode=result[3], textSize=result[4], language=result[5], pinUrgantTask=result[6], autoHideTask=result[7], sortBy=result[8])
+    return render_template("settings.html", reminders=result[1], alerts=result[2], darkMode=result[3],
+                           textSize=result[4], language=result[5], pinUrgantTask=result[6], autoHideTask=result[7], sortBy=result[8])
 
 
 ALLOWED_KEYS_SETTINGS = {"reminders", "alerts",
