@@ -58,6 +58,11 @@ python app.py
 
 The app will be available at http://localhost:5000
 
+If you wanna have a quick look here is a usertest:
+| Username | Password |
+|---|---|
+| usertest | user123$& |
+
 ## 🧪 Testing
 
 The project uses pytest for automated testing. Tests are located in `test_app.py` and use Flask's built-in test client alongside `unittest.mock` to test route behaviour without requiring a live database.
