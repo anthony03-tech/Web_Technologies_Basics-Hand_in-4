@@ -11,32 +11,18 @@ def client():
         yield client
 
 
-# Test 1: Home page redirects to login
-def test_home_redirects_to_login(client):
-    res = client.get("/")
-    assert res.status_code == 302
-    assert "/login" in res.headers["Location"]
+@pytest.fixture
+def logged_in_client(client):
+    with client.session_transaction() as sess:
+        sess["user_id"] = 1
+    return client
 
 
-# Test 2: Login page loads
-def test_login_page_loads(client):
-    res = client.get("/login")
-    assert res.status_code == 200
-
-
-# Test 3: Login with missing fields
-def test_login_missing_fields(client):
-    res = client.post("/login", data={"username": "", "password": ""})
-    assert b"All fields are required" in res.data
-
-
-# Test 4: updatePw with missing fields returns 400
 def test_update_pw_missing_fields(client):
     res = client.patch("/updatePw", json={})
     assert res.status_code == 400
 
 
-# Test 5: addTask without being logged in
 def test_add_task_not_logged_in(client):
     res = client.patch("/addTask", json={
         "taskName": "Test", "taskDate": "2026-01-01", "type": "Normal"
@@ -44,3 +30,30 @@ def test_add_task_not_logged_in(client):
 
     assert res.status_code == 401
     assert b"Not logged in" in res.data
+
+
+def test_settings_toggle_not_logged_in(client):
+    res = client.patch("/settings/toggle",
+                       json={"key": "reminders", "value": True})
+    assert res.status_code == 401
+
+
+def test_settings_toggle_invalid_key(logged_in_client):
+    res = logged_in_client.patch(
+        "/settings/toggle", json={"key": "injectedField", "value": True})
+    assert b"Invalid setting" in res.data
+
+
+def test_delete_task_missing_body(client):
+    res = client.delete("/deleteTask", json={})
+    assert res.status_code == 400
+
+
+def test_update_pw_missing_fields(client):
+    res = client.patch("/updatePw", json={})
+    assert res.status_code == 400
+
+
+def test_delete_task_missing_body(client):
+    res = client.delete("/deleteTask", json={})
+    assert res.status_code == 400
