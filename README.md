@@ -104,22 +104,29 @@ gunicorn app:app
 
 ## 📁 Project Structure
 
-├── app.py                  # Main Flask application & all routes
-├── test_app.py             # Automated pytest tests
-├── conftest.py             # Pytest path configuration
-├── requirements.txt        # Python dependencies
-├── .env                    # Environment variables (not committed)
-├── templates/
-│   ├── login.html
-│   ├── createAccount.html
-│   ├── forgotPassword.html
-│   ├── to-do-list.html
-│   ├── account.html
-│   └── settings.html
-└── static/
-    ├── css-login.css
-    ├── css-createAcc.css
-    ├── css-forgotPw.css
-    ├── css-FirstPage.css
-    ├── css-SecondPage.css
-    └── css-ThirdPage.css
+LU-Hand-in_4-4_Final-Deployment
+│   │   .env                       # Environment variables (not committed)
+│   │   .gitignore
+│   │   app.py                     # Main Flask application & all routes
+│   │   conftest.py                # Pytest path configuration
+│   │   README.md
+│   │   requirements.txt           # Python dependencies
+│   │
+│   ├───static
+│   │       css-createAcc.css
+│   │       css-FirstPage.css
+│   │       css-forgotPw.css
+│   │       css-login.css
+│   │       css-SecondPage.css
+│   │       css-ThirdPage.css
+│   │
+│   ├───templates
+│   │       account.html
+│   │       createAccount.html
+│   │       forgotPassword.html
+│   │       login.html
+│   │       settings.html
+│   │       to-do-list.html
+│   │
+│   └───tests
+│           test_app.py             # Automated pytest tests
