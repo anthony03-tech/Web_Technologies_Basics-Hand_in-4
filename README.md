@@ -104,6 +104,7 @@ gunicorn app:app
 
 ## 📁 Project Structure
 
+```
 LU-Hand-in_4-4_Final-Deployment
 │   │   .env                       # Environment variables (not committed)
 │   │   .gitignore
@@ -130,3 +131,4 @@ LU-Hand-in_4-4_Final-Deployment
 │   │
 │   └───tests
 │           test_app.py             # Automated pytest tests
+```
