@@ -42,5 +42,5 @@ def test_add_task_not_logged_in(client):
         "taskName": "Test", "taskDate": "2026-01-01", "type": "Normal"
     })
 
-    assert res.status_code == 200
+    assert res.status_code == 401
     assert b"Not logged in" in res.data
